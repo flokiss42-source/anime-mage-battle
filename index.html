@@ -1,0 +1,891 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>✨ Anime Mage Battle</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Arial', sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+            color: white;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: rgba(0,0,0,0.5);
+            border-radius: 20px;
+            border: 2px solid #9d4edd;
+        }
+        
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, #ff6b6b, #ffd93d, #6bcf7f);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 20px rgba(255,255,255,0.3);
+        }
+        
+        .player-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .stat-card {
+            background: rgba(255,255,255,0.1);
+            padding: 15px;
+            border-radius: 15px;
+            text-align: center;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        
+        .stat-value {
+            font-size: 2em;
+            font-weight: bold;
+            margin-top: 5px;
+        }
+        
+        .battle-area {
+            background: rgba(0,0,0,0.7);
+            border-radius: 20px;
+            padding: 25px;
+            margin: 25px 0;
+            border: 3px solid #ff6b6b;
+            position: relative;
+            min-height: 300px;
+        }
+        
+        .character {
+            position: absolute;
+            width: 100px;
+            height: 150px;
+            bottom: 30px;
+            transition: all 0.3s;
+        }
+        
+        .player {
+            left: 100px;
+        }
+        
+        .enemy {
+            right: 100px;
+            transform: scaleX(-1);
+        }
+        
+        .health-bar {
+            width: 200px;
+            height: 20px;
+            background: #333;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 10px auto;
+            position: relative;
+        }
+        
+        .health-fill {
+            height: 100%;
+            border-radius: 10px;
+            transition: width 0.5s;
+        }
+        
+        .player-health {
+            background: linear-gradient(90deg, #4CAF50, #8BC34A);
+        }
+        
+        .enemy-health {
+            background: linear-gradient(90deg, #f44336, #ff9800);
+        }
+        
+        .skills {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin: 25px 0;
+        }
+        
+        .skill-btn {
+            background: linear-gradient(135deg, #6a11cb, #2575fc);
+            border: none;
+            color: white;
+            padding: 20px 10px;
+            border-radius: 15px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .skill-btn:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 20px rgba(106, 17, 203, 0.5);
+        }
+        
+        .skill-btn:disabled {
+            background: #666;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .skill-cost {
+            font-size: 12px;
+            opacity: 0.8;
+        }
+        
+        .battle-log {
+            background: rgba(0,0,0,0.5);
+            border-radius: 15px;
+            padding: 15px;
+            max-height: 150px;
+            overflow-y: auto;
+            margin-top: 20px;
+            font-size: 14px;
+        }
+        
+        .log-entry {
+            padding: 8px;
+            margin: 5px 0;
+            border-left: 3px solid;
+            background: rgba(255,255,255,0.1);
+        }
+        
+        .damage-log {
+            border-color: #ff6b6b;
+        }
+        
+        .heal-log {
+            border-color: #4CAF50;
+        }
+        
+        .info-log {
+            border-color: #2196F3;
+        }
+        
+        .rank-system {
+            display: flex;
+            justify-content: space-around;
+            margin: 25px 0;
+            padding: 20px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 15px;
+        }
+        
+        .rank {
+            text-align: center;
+            padding: 15px;
+            border-radius: 10px;
+            min-width: 120px;
+        }
+        
+        .rank.active {
+            background: rgba(255, 215, 0, 0.2);
+            border: 2px solid gold;
+        }
+        
+        .rank-icon {
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+        
+        .xp-bar {
+            width: 100%;
+            height: 10px;
+            background: #333;
+            border-radius: 5px;
+            margin: 15px 0;
+            overflow: hidden;
+        }
+        
+        .xp-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #00bcd4, #0097a7);
+            border-radius: 5px;
+        }
+        
+        .upgrade-shop {
+            display: none;
+            background: rgba(0,0,0,0.8);
+            padding: 25px;
+            border-radius: 20px;
+            margin-top: 20px;
+        }
+        
+        .upgrade-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            margin: 10px 0;
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .modal-content {
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            padding: 40px;
+            border-radius: 25px;
+            text-align: center;
+            max-width: 500px;
+            width: 90%;
+            border: 3px solid #9d4edd;
+        }
+        
+        button {
+            background: linear-gradient(135deg, #ff6b6b, #ffa726);
+            border: none;
+            color: white;
+            padding: 15px 30px;
+            font-size: 18px;
+            border-radius: 25px;
+            cursor: pointer;
+            margin: 10px;
+            transition: all 0.3s;
+        }
+        
+        button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 25px rgba(255, 107, 107, 0.5);
+        }
+        
+        .character-img {
+            width: 100%;
+            height: 100%;
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>✨ ANIME MAGE BATTLE ✨</h1>
+            <div class="player-stats">
+                <div class="stat-card">
+                    <div>⚡ Уровень</div>
+                    <div class="stat-value" id="level">1</div>
+                </div>
+                <div class="stat-card">
+                    <div>🏆 Ранг</div>
+                    <div class="stat-value" id="rank">Новичок</div>
+                </div>
+                <div class="stat-card">
+                    <div>💰 Очки</div>
+                    <div class="stat-value" id="score">0</div>
+                </div>
+                <div class="stat-card">
+                    <div>❤️ Здоровье</div>
+                    <div class="stat-value" id="health">100</div>
+                </div>
+                <div class="stat-card">
+                    <div>🔮 Мана</div>
+                    <div class="stat-value" id="mana">100</div>
+                </div>
+                <div class="stat-card">
+                    <div>⭐️ Опыт</div>
+                    <div class="stat-value" id="xp">0/100</div>
+                </div>
+            </div>
+            
+            <div class="xp-bar">
+                <div class="xp-fill" id="xpFill" style="width: 0%"></div>
+            </div>
+        </header>
+        
+        <div class="rank-system">
+            <div class="rank" id="rank1">
+                <div class="rank-icon">🥉</div>
+                <div>Новичок</div>
+            </div>
+            <div class="rank" id="rank2">
+                <div class="rank-icon">🥈</div>
+                <div>Маг</div>
+            </div>
+            <div class="rank" id="rank3">
+                <div class="rank-icon">🥇</div>
+                <div>Архимаг</div>
+            </div>
+            <div class="rank" id="rank4">
+                <div class="rank-icon">👑</div>
+                <div>Мастер Стихий</div>
+            </div>
+            <div class="rank" id="rank5">
+                <div class="rank-icon">💎</div>
+                <div>Божественный Маг</div>
+            </div>
+        </div>
+        
+        <div class="battle-area">
+            <div class="health-bar">
+                <div class="health-fill player-health" id="playerHealth" style="width: 100%"></div>
+            </div>
+            
+            <div class="character player">
+                <div class="character-img" id="playerChar">⚔️</div>
+            </div>
+            
+            <div class="character enemy">
+                <div class="character-img" id="enemyChar">👹</div>
+            </div>
+            
+            <div class="health-bar">
+                <div class="health-fill enemy-health" id="enemyHealth" style="width: 100%"></div>
+            </div>
+            
+            <div id="enemyName" style="text-align: center; margin-top: 10px; font-weight: bold;">Гоблин Уровень 1</div>
+        </div>
+        
+        <div class="skills">
+            <button class="skill-btn" onclick="useSkill(0)">
+                <span>🔥 Огненный шар</span>
+                <span class="skill-cost">🔮 20</span>
+            </button>
+            <button class="skill-btn" onclick="useSkill(1)">
+                <span>❄️ Ледяная стрела</span>
+                <span class="skill-cost">🔮 15</span>
+            </button>
+            <button class="skill-btn" onclick="useSkill(2)">
+                <span>⚡ Молния</span>
+                <span class="skill-cost">🔮 25</span>
+            </button>
+            <button class="skill-btn" onclick="useSkill(3)">
+                <span>💚 Исцеление</span>
+                <span class="skill-cost">🔮 30</span>
+            </button>
+            <button class="skill-btn" onclick="useSkill(4)">
+                <span>🛡️ Щит</span>
+                <span class="skill-cost">🔮 40</span>
+            </button>
+            <button class="skill-btn" onclick="useSkill(5)">
+                <span>🌀 Вихрь</span>
+                <span class="skill-cost">🔮 35</span>
+            </button>
+            <button class="skill-btn" onclick="useSkill(6)">
+                <span>💥 Метеор</span>
+                <span class="skill-cost">🔮 50</span>
+            </button>
+            <button class="skill-btn" onclick="useSkill(7)">
+                <span>✨ Святая атака</span>
+                <span class="skill-cost">🔮 45</span>
+            </button>
+        </div>
+        
+        <div class="battle-log" id="battleLog"></div>
+        
+        <div style="text-align: center; margin: 25px 0;">
+            <button onclick="startBattle()">⚔️ НАЧАТЬ БИТВУ</button>
+            <button onclick="openShop()">🏪 МАГАЗИН</button>
+            <button onclick="saveGame()">💾 СОХРАНИТЬ</button>
+        </div>
+        
+        <div class="upgrade-shop" id="shop">
+            <h3 style="text-align: center; margin-bottom: 20px;">🏪 МАГАЗИН УЛУЧШЕНИЙ</h3>
+            <div class="upgrade-item">
+                <div>🔥 Сила огня (+10% урона)</div>
+                <button onclick="buyUpgrade('fire')" data-cost="100">💰 100</button>
+            </div>
+            <div class="upgrade-item">
+                <div>❄️ Сила льда (+15% к шансу заморозки)</div>
+                <button onclick="buyUpgrade('ice')" data-cost="150">💰 150</button>
+            </div>
+            <div class="upgrade-item">
+                <div>❤️ Макс. здоровье (+50 HP)</div>
+                <button onclick="buyUpgrade('health')" data-cost="200">💰 200</button>
+            </div>
+            <div class="upgrade-item">
+                <div>🔮 Макс. мана (+50 MP)</div>
+                <button onclick="buyUpgrade('mana')" data-cost="200">💰 200</button>
+            </div>
+            <div class="upgrade-item">
+                <div>⚡ Скорость регенерации маны</div>
+                <button onclick="buyUpgrade('regen')" data-cost="300">💰 300</button>
+            </div>
+            <button onclick="closeShop()" style="margin-top: 20px;">❌ Закрыть магазин</button>
+        </div>
+    </div>
+    
+    <div class="modal" id="gameOverModal">
+        <div class="modal-content">
+            <h2 style="color: #ff6b6b; margin-bottom: 20px;">💀 БИТВА ПРОИГРАНА</h2>
+            <p id="resultText">Вы проиграли битву!</p>
+            <p style="margin: 15px 0;">Получено опыта: <span id="xpEarned">0</span></p>
+            <button onclick="restartBattle()">🔄 Новая битва</button>
+            <button onclick="sendResult()">📤 Отправить результат</button>
+        </div>
+    </div>
+    
+    <div class="modal" id="winModal">
+        <div class="modal-content">
+            <h2 style="color: #4CAF50; margin-bottom: 20px;">🏆 БИТВА ВЫИГРАНА!</h2>
+            <p id="winText">Вы победили врага!</p>
+            <p style="margin: 15px 0;">Получено опыта: <span id="xpWin">0</span></p>
+            <p style="margin: 15px 0;">Получено очков: <span id="scoreWin">0</span></p>
+            <button onclick="nextBattle()">➡️ Следующий враг</button>
+            <button onclick="sendResult()">📤 Отправить результат</button>
+        </div>
+    </div>
+
+    <script>
+        // Telegram Web App
+        const tg = window.Telegram?.WebApp;
+        if (tg) {
+            tg.ready();
+            tg.expand();
+        }
+        
+        // Игровые данные
+        let gameState = {
+            level: 1,
+            rank: "Новичок",
+            score: 0,
+            health: 100,
+            maxHealth: 100,
+            mana: 100,
+            maxMana: 100,
+            xp: 0,
+            xpNeeded: 100,
+            enemyHealth: 100,
+            enemyMaxHealth: 100,
+            enemyLevel: 1,
+            enemyType: "goblin",
+            battleActive: false,
+            upgrades: {
+                fire: 0,
+                ice: 0,
+                health: 0,
+                mana: 0,
+                regen: 0
+            },
+            skills: [
+                { name: "Огненный шар", cost: 20, damage: 25, element: "fire" },
+                { name: "Ледяная стрела", cost: 15, damage: 20, element: "ice", freezeChance: 0.2 },
+                { name: "Молния", cost: 25, damage: 35, element: "lightning" },
+                { name: "Исцеление", cost: 30, heal: 40, element: "holy" },
+                { name: "Щит", cost: 40, defense: 0.5, element: "earth" },
+                { name: "Вихрь", cost: 35, damage: 30, element: "wind" },
+                { name: "Метеор", cost: 50, damage: 60, element: "fire" },
+                { name: "Святая атака", cost: 45, damage: 55, element: "holy" }
+            ],
+            enemies: [
+                { name: "Гоблин", health: 100, damage: 10, xp: 50, emoji: "👹" },
+                { name: "Орк", health: 150, damage: 15, xp: 75, emoji: "👺" },
+                { name: "Дракон", health: 300, damage: 25, xp: 150, emoji: "🐉" },
+                { name: "Демон", health: 250, damage: 30, xp: 200, emoji: "😈" },
+                { name: "Темный маг", health: 200, damage: 35, xp: 180, emoji: "🧙‍♂️" }
+            ]
+        };
+        
+        // Инициализация игры
+        function initGame() {
+            updateUI();
+            updateRanks();
+            loadGame();
+            addLog("✨ Добро пожаловать в Anime Mage Battle!", "info");
+        }
+        
+        // Обновление интерфейса
+        function updateUI() {
+            document.getElementById('level').textContent = gameState.level;
+            document.getElementById('rank').textContent = gameState.rank;
+            document.getElementById('score').textContent = gameState.score;
+            document.getElementById('health').textContent = gameState.health;
+            document.getElementById('mana').textContent = gameState.mana;
+            document.getElementById('xp').textContent = `${gameState.xp}/${gameState.xpNeeded}`;
+            
+            // Шкалы здоровья
+            const playerHealthPercent = (gameState.health / gameState.maxHealth) * 100;
+            const enemyHealthPercent = (gameState.enemyHealth / gameState.enemyMaxHealth) * 100;
+            
+            document.getElementById('playerHealth').style.width = playerHealthPercent + '%';
+            document.getElementById('enemyHealth').style.width = enemyHealthPercent + '%';
+            
+            // Шкала опыта
+            const xpPercent = (gameState.xp / gameState.xpNeeded) * 100;
+            document.getElementById('xpFill').style.width = xpPercent + '%';
+            
+            // Обновляем врага
+            const enemy = gameState.enemies[gameState.enemyType === "goblin" ? 0 : 
+                          gameState.enemyType === "ork" ? 1 : 
+                          gameState.enemyType === "dragon" ? 2 :
+                          gameState.enemyType === "demon" ? 3 : 4];
+            
+            document.getElementById('enemyName').textContent = 
+                `${enemy.name} Уровень ${gameState.enemyLevel}`;
+            document.getElementById('enemyChar').textContent = enemy.emoji;
+            
+            // Обновляем доступность скиллов
+            updateSkills();
+        }
+        
+        // Обновление рангов
+        function updateRanks() {
+            const ranks = ["Новичок", "Маг", "Архимаг", "Мастер Стихий", "Божественный Маг"];
+            const currentRankIndex = ranks.indexOf(gameState.rank);
+            
+            // Сбрасываем все активные классы
+            document.querySelectorAll('.rank').forEach(rank => {
+                rank.classList.remove('active');
+            });
+            
+            // Активируем текущий ранг
+            if (currentRankIndex >= 0) {
+                document.getElementById(`rank${currentRankIndex + 1}`).classList.add('active');
+            }
+        }
+        
+        // Обновление доступности скиллов
+        function updateSkills() {
+            const skillButtons = document.querySelectorAll('.skill-btn');
+            skillButtons.forEach((btn, index) => {
+                const skill = gameState.skills[index];
+                if (gameState.mana < skill.cost || !gameState.battleActive) {
+                    btn.disabled = true;
+                } else {
+                    btn.disabled = false;
+                }
+            });
+        }
+        
+        // Использование скилла
+        function useSkill(skillIndex) {
+            if (!gameState.battleActive) {
+                addLog("Битва не начата!", "info");
+                return;
+            }
+            
+            const skill = gameState.skills[skillIndex];
+            
+            if (gameState.mana < skill.cost) {
+                addLog("Недостаточно маны!", "info");
+                return;
+            }
+            
+            // Тратим ману
+            gameState.mana -= skill.cost;
+            
+            // Эффекты скилла
+            let damage = skill.damage || 0;
+            let heal = skill.heal || 0;
+            let message = "";
+            
+            // Бонусы от улучшений
+            if (skill.element === "fire") {
+                damage += damage * (gameState.upgrades.fire * 0.1);
+            }
+            if (skill.element === "ice" && skill.freezeChance) {
+                if (Math.random() < (skill.freezeChance + gameState.upgrades.ice * 0.15)) {
+                    message = " Враг заморожен!";
+                }
+            }
+            
+            // Наносим урон или лечим
+            if (damage > 0) {
+                gameState.enemyHealth -= damage;
+                addLog(`⚔️ ${skill.name} наносит ${damage} урона${message}`, "damage");
+            }
+            if (heal > 0) {
+                gameState.health = Math.min(gameState.maxHealth, gameState.health + heal);
+                addLog(`💚 ${skill.name} восстанавливает ${heal} HP`, "heal");
+            }
+            
+            // Проверяем победу
+            if (gameState.enemyHealth <= 0) {
+                gameState.enemyHealth = 0;
+                winBattle();
+            } else {
+                // Ход врага
+                setTimeout(enemyAttack, 1000);
+            }
+            
+            updateUI();
+        }
+        
+        // Атака врага
+        function enemyAttack() {
+            if (!gameState.battleActive) return;
+            
+            const enemy = gameState.enemies[gameState.enemyType === "goblin" ? 0 : 
+                          gameState.enemyType === "ork" ? 1 : 
+                          gameState.enemyType === "dragon" ? 2 :
+                          gameState.enemyType === "demon" ? 3 : 4];
+            
+            let damage = enemy.damage + Math.floor(Math.random() * 10);
+            
+            // Защита от щита
+            if (Math.random() < 0.3) { // 30% шанс что щит сработает
+                damage = Math.floor(damage * 0.5);
+                addLog("🛡️ Щит поглощает часть урона!", "info");
+            }
+            
+            gameState.health -= damage;
+            addLog(`👹 ${enemy.name} атакует и наносит ${damage} урона`, "damage");
+            
+            // Регенерация маны
+            gameState.mana = Math.min(gameState.maxMana, gameState.mana + 5 + gameState.upgrades.regen * 2);
+            
+            // Проверяем поражение
+            if (gameState.health <= 0) {
+                gameState.health = 0;
+                gameOver();
+            }
+            
+            updateUI();
+        }
+        
+        // Начать битву
+        function startBattle() {
+            gameState.battleActive = true;
+            gameState.health = gameState.maxHealth;
+            gameState.mana = gameState.maxMana;
+            
+            const enemyTypes = ["goblin", "ork", "dragon", "demon", "mage"];
+            gameState.enemyType = enemyTypes[Math.min(gameState.level - 1, 4)];
+            gameState.enemyLevel = Math.floor(gameState.level / 2) + 1;
+            
+            const enemyIndex = enemyTypes.indexOf(gameState.enemyType);
+            const enemy = gameState.enemies[enemyIndex];
+            gameState.enemyMaxHealth = enemy.health * gameState.enemyLevel;
+            gameState.enemyHealth = gameState.enemyMaxHealth;
+            
+            addLog(`⚔️ Начинается битва с ${enemy.name} уровня ${gameState.enemyLevel}!`, "info");
+            updateUI();
+        }
+        
+        // Победа в битве
+        function winBattle() {
+            gameState.battleActive = false;
+            
+            const enemyIndex = gameState.enemies.findIndex(e => 
+                e.name.toLowerCase().includes(gameState.enemyType));
+            const xpEarned = gameState.enemies[enemyIndex].xp * gameState.enemyLevel;
+            const scoreEarned = 100 * gameState.enemyLevel;
+            
+            gameState.xp += xpEarned;
+            gameState.score += scoreEarned;
+            
+            // Проверяем уровень
+            if (gameState.xp >= gameState.xpNeeded) {
+                levelUp();
+            }
+            
+            // Проверяем ранг
+            checkRank();
+            
+            // Показываем окно победы
+            document.getElementById('xpWin').textContent = xpEarned;
+            document.getElementById('scoreWin').textContent = scoreEarned;
+            document.getElementById('winText').textContent = 
+                `Вы победили ${gameState.enemies[enemyIndex].name} уровня ${gameState.enemyLevel}!`;
+            document.getElementById('winModal').style.display = 'flex';
+            
+            updateUI();
+        }
+        
+        // Поражение
+        function gameOver() {
+            gameState.battleActive = false;
+            const xpEarned = Math.floor(gameState.xpNeeded * 0.1);
+            gameState.xp += xpEarned;
+            
+            document.getElementById('xpEarned').textContent = xpEarned;
+            document.getElementById('resultText').textContent = 
+                `Вы проиграли битву с ${gameState.enemies.find(e => 
+                    e.name.toLowerCase().includes(gameState.enemyType)).name}!`;
+            document.getElementById('gameOverModal').style.display = 'flex';
+            
+            updateUI();
+        }
+        
+        // Повышение уровня
+        function levelUp() {
+            gameState.level++;
+            gameState.xp -= gameState.xpNeeded;
+            gameState.xpNeeded = Math.floor(gameState.xpNeeded * 1.5);
+            
+            gameState.maxHealth += 20;
+            gameState.maxMana += 15;
+            gameState.health = gameState.maxHealth;
+            gameState.mana = gameState.maxMana;
+            
+            addLog(`🎉 Уровень повышен! Теперь вы уровня ${gameState.level}`, "info");
+        }
+        
+        // Проверка ранга
+        function checkRank() {
+            const ranks = [
+                { level: 1, name: "Новичок" },
+                { level: 5, name: "Маг" },
+                { level: 10, name: "Архимаг" },
+                { level: 15, name: "Мастер Стихий" },
+                { level: 20, name: "Божественный Маг" }
+            ];
+            
+            for (let i = ranks.length - 1; i >= 0; i--) {
+                if (gameState.level >= ranks[i].level) {
+                    if (gameState.rank !== ranks[i].name) {
+                        gameState.rank = ranks[i].name;
+                        addLog(`🏆 Новый ранг: ${ranks[i].name}!`, "info");
+                        updateRanks();
+                    }
+                    break;
+                }
+            }
+        }
+        
+        // Открыть магазин
+        function openShop() {
+            document.getElementById('shop').style.display = 'block';
+        }
+        
+        // Закрыть магазин
+        function closeShop() {
+            document.getElementById('shop').style.display = 'none';
+        }
+        
+        // Купить улучшение
+        function buyUpgrade(type) {
+            const button = event.target;
+            const cost = parseInt(button.getAttribute('data-cost'));
+            
+            if (gameState.score < cost) {
+                addLog("Недостаточно очков для улучшения!", "info");
+                return;
+            }
+            
+            gameState.score -= cost;
+            gameState.upgrades[type]++;
+            
+            // Применяем улучшение
+            switch(type) {
+                case 'health':
+                    gameState.maxHealth += 50;
+                    gameState.health = gameState.maxHealth;
+                    break;
+                case 'mana':
+                    gameState.maxMana += 50;
+                    gameState.mana = gameState.maxMana;
+                    break;
+            }
+            
+            addLog(`✅ Улучшение "${type}" куплено!`, "info");
+            updateUI();
+        }
+        
+        // Новая битва (после поражения)
+        function restartBattle() {
+            document.getElementById('gameOverModal').style.display = 'none';
+            startBattle();
+        }
+        
+        // Следующий враг (после победы)
+        function nextBattle() {
+            document.getElementById('winModal').style.display = 'none';
+            startBattle();
+        }
+        
+        // Сохранить игру
+        function saveGame() {
+            const saveData = {
+                level: gameState.level,
+                score: gameState.score,
+                xp: gameState.xp,
+                xpNeeded: gameState.xpNeeded,
+                rank: gameState.rank,
+                upgrades: gameState.upgrades,
+                maxHealth: gameState.maxHealth,
+                maxMana: gameState.maxMana
+            };
+            
+            localStorage.setItem('animeMageSave', JSON.stringify(saveData));
+            addLog("💾 Игра сохранена!", "info");
+        }
+        
+        // Загрузить игру
+        function loadGame() {
+            const saved = localStorage.getItem('animeMageSave');
+            if (saved) {
+                const saveData = JSON.parse(saved);
+                Object.assign(gameState, saveData);
+                gameState.health = gameState.maxHealth;
+                gameState.mana = gameState.maxMana;
+                addLog("💾 Игра загружена!", "info");
+            }
+        }
+        
+        // Отправить результат в Telegram
+        function sendResult() {
+            const gameData = {
+                type: "anime_mage_battle",
+                level: gameState.level,
+                rank: gameState.rank,
+                score: gameState.score,
+                xp: gameState.xp,
+                upgrades: gameState.upgrades
+            };
+            
+            if (tg && tg.sendData) {
+                tg.sendData(JSON.stringify(gameData));
+                setTimeout(() => {
+                    if (tg.close) tg.close();
+                }, 2000);
+            } else {
+                alert("Результат: " + JSON.stringify(gameData, null, 2));
+            }
+            
+            document.getElementById('gameOverModal').style.display = 'none';
+            document.getElementById('winModal').style.display = 'none';
+        }
+        
+        // Добавить запись в лог
+        function addLog(message, type) {
+            const log = document.getElementById('battleLog');
+            const entry = document.createElement('div');
+            entry.className = `log-entry ${type}-log`;
+            entry.textContent = message;
+            log.appendChild(entry);
+            log.scrollTop = log.scrollHeight;
+        }
+        
+        // Авто-сохранение каждые 30 секунд
+        setInterval(saveGame, 30000);
+        
+        // Запуск игры при загрузке
+        window.onload = initGame;
+    </script>
+</body>
+</html>
